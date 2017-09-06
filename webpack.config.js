@@ -14,6 +14,10 @@ module.exports = {
       'build.js'
     ]
   },
+  devServer: {
+    hot: true,
+    inline: true
+  },
   // 输出
   output: {
     path: path.resolve(__dirname, './dist'),

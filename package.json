@@ -4,7 +4,7 @@
   "main": "test.js",
   "scripts": {
     "dev": "webpack --watch",
-    "start": "browser-sync start --server --files 'dist/*.* , *.html'",
+    "start": "webpack-dev-server ",
     "deploy": "webpack -p"
   },
   "repository": {
@@ -38,5 +38,8 @@
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1",
     "webpack": "^2.4.1"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "^2.7.1"
   }
 }
