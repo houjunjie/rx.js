@@ -19,6 +19,7 @@
   },
   "extends": "airbnb-base/legacy",
   "rules": {
+    "class-methods-use-this": "off",
     "no-unused-expressions": [
       1,
       {
