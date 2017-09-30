@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import B from './b.jsx';
 
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import 'rxjs/add/observable/fromEvent';
+import 'rxjs/add/operator/map';
 
 
 import classNames from 'classnames/bind';
@@ -15,54 +17,89 @@ class A extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      self: 'A'
+      self: 'A',
+      count: 0
     }
   }
   componentDidMount() {
-    const enter = Observable.fromEvent(this.refs.ipt, 'keydown')
-      .filter((e) => {
-        return e.keyCode === 13;
+    var oBtn = document.querySelector('#btn');
+    const click = Observable.fromEvent(oBtn, 'click');
+    click
+      .throttleTime(1000)
+      .map((event) => {
+        console.log(event);
+        return event.clientX
       })
-    const click = Observable.fromEvent(this.refs.btn, 'click');
+      .scan((count, clientX) => count + clientX, 0)
+      .subscribe((count) => this.setState({
+        count: count
+      }));
+    // Observable
+    // let observable = Observable.create((observer) => {
+    //   observer.next(1);
+    //   observer.next(2);
+    //   observer.next(3);
+    //   setTimeout(() => {
+    //     observer.next(4);
+    //     observer.complete();
+    //   }, 2000)
+    // })
+    // console.log('just before subscribe');
+    // observable.subscribe({
+    //   next: x => console.log('got value ' + x),
+    //   error: err => console.error('something wrong occurred: ' + err),
+    //   complete: () => console.log('done')
+    // })
+    // observable.subscribe({
+    //   next: x => console.log('got value2 ' + x),
+    //   error: err => console.error('something wrong occurred2: ' + err),
+    //   complete: () => console.log('done2')
+    // })
+    // console.log('just after subscribe');
 
-    const input = enter.merge(click);
+    // let observable1 = Observable.interval(500);
+    // let observable2 = Observable.interval(400);
 
-    input.map(() => {
-      return this.refs.ipt.value
+    // let subscription = observable1.subscribe((x) => console.log('first: ' + x));
+    // let childSubscription = observable2.subscribe(x => console.log('secnd: ' + x));
+    // // subscription.unsubscribe();
+    // subscription.add(childSubscription);
+    // setTimeout(() => {
+    //   // Unsubscribes BOTH subscription and childSubscription
+    //   subscription.unsubscribe();
+    // }, 1000);
+
+    // let subject = new Subject();
+    // subject.subscribe({
+    //   next: v => console.log('observerA: ' + v)
+    // })
+    // subject.subscribe({
+    //   next: v => console.log('observerB: ' + v)
+    // })
+    // // subject.next(1);
+    // // subject.next(2);
+    // let obserable = Observable.from([1, 2, 3]);
+    // obserable.subscribe(subject);
+    let source = Observable.from([1, 2, 3, 4]);
+    let subject = new Subject();
+    let multicasted = source.multicast(subject);
+    multicasted.subscribe({
+      next: v => console.log('observerA: ' + v)
     })
-      .map((e) => {
-        return `<p>${e}</p>`
-      })
-      .do((e) => {
-        document.querySelector('.fuck').innerHTML = e;
-        this.refs.ipt.value = '';
-      })
-      .mergeMap((e) => {
-        return Observable.fromEvent(e, 'click').filter((ee) => {
-          return ee.target === e
-        }).mapTo(e)
-      })
-      .do((e) => {
-        console.log('last', e);
-      })
-      .subscribe();
-    const fuck = 11;
-    const shit = 22;
-    function test({
-      fuck2 = fuck,
-      shit2 = shit
-      } = {}) {
-
-    }
+    multicasted.subscribe({
+      next: v => console.log('observerB: ' + v)
+    })
+    multicasted.connect();
   }
   render() {
-    const { self } = this.state;
+    const { self, count } = this.state;
     return (
       <div ref='a' className={cx('box', 'slide-left')}>
         {self}
         <B />
         <input type="text" ref='ipt' />
-        <button ref='btn'>add</button>
+        <button id="btn" ref='btn'>add</button><br/>
+        {count}
       </div>
     );
   }
